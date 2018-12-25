@@ -1,26 +1,28 @@
 package cn.goour
 
 import cn.goour.model.IndexData
+import cn.goour.model.MySession
 import freemarker.cache.ClassTemplateLoader
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.application.log
-import io.ktor.auth.Authentication
-import io.ktor.auth.FormAuthChallenge
-import io.ktor.auth.UserIdPrincipal
-import io.ktor.auth.form
+import io.ktor.auth.*
 import io.ktor.features.PartialContent
 import io.ktor.freemarker.FreeMarker
 import io.ktor.freemarker.FreeMarkerContent
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
-import io.ktor.request.receiveParameters
 import io.ktor.response.respond
+import io.ktor.response.respondRedirect
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.routing.routing
+import io.ktor.sessions.Sessions
+import io.ktor.sessions.cookie
+import io.ktor.sessions.sessions
+import io.ktor.sessions.set
 
 /**
  * Created by 侯坤林(houkunlin@ibona.cn) on 2018-12-24.
@@ -59,6 +61,48 @@ fun Application.main() {
     install(PartialContent)
 
     /**
+     * 使用表单验证
+     */
+    install(Authentication) {
+        form("login") {
+            userParamName = "username"
+            passwordParamName = "password"
+            // 使用该方法会返回一个代码401验证错误
+            challenge = FormAuthChallenge.Unauthorized
+            // 自定义处理验证失败时跳转链接
+            challenge = FormAuthChallenge.Redirect(url = { credentials ->
+                // 验证失败时会执行这里,这个credentials是一个UserPasswordCredential对象
+                log.debug("challenge user = {}", credentials)
+                "/"
+            })
+            log.debug(
+                "userParamName = {}, passwordParamName = {}, challenge = {}",
+                userParamName,
+                passwordParamName,
+                challenge
+            )
+            // 进行账号验证
+            validate { credentials ->
+                log.debug("credentials = {}", credentials)
+                if (credentials.name == credentials.password) {
+                    UserIdPrincipal(credentials.name)
+                } else {
+                    // 验证失败
+                    null
+                }
+            }
+
+        }
+    }
+
+    /**
+     * 使用session会话功能
+     */
+    install(Sessions) {
+        cookie<MySession>("SESSION")
+    }
+
+    /**
      * 正式的路径映射内容
      */
     routing {
@@ -73,13 +117,17 @@ fun Application.main() {
             get {
                 call.respond(FreeMarkerContent("login.ftl", null))
             }
-            post {
-                val params = call.receiveParameters()
-                log.debug("请求参数:{}", params)
-                if (params["username"] == null || params["password"] == null) {
-                    call.respond(FreeMarkerContent("login.ftl", mapOf("error" to "失败,请输入参数")))
-                } else {
-                    call.respond(FreeMarkerContent("login.ftl", mapOf("ok" to "成功")))
+            // 使用表单验证
+            authenticate("login") {
+                // 当表单验证成功时,才会进入到这里,验证失败在form验证代码里面会直接跳转
+                post {
+                    // 理论上运行到这里不可能为Null,但是不明白为什么为什么会返回Null
+                    // 这个UserIdPrincipal是在form validate代码里返回的用户对象,它是一个实现Principal接口的对象
+                    val principal = call.principal<UserIdPrincipal>() ?: error("登录失败,没有用户")
+                    // 这个东西看起来有点怪怪的,它会在浏览器产生一个SESSION = name%3D%2523{{name}}的值
+                    call.sessions.set(MySession(principal.name))
+                    // 登录成功跳转
+                    call.respondRedirect("/", permanent = false)
                 }
             }
         }
