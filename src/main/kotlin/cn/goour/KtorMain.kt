@@ -2,6 +2,7 @@ package cn.goour
 
 import cn.goour.model.IndexData
 import cn.goour.model.MySession
+import cn.goour.route.configStaticPath
 import freemarker.cache.ClassTemplateLoader
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -12,16 +13,11 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.features.PartialContent
 import io.ktor.freemarker.FreeMarker
 import io.ktor.freemarker.FreeMarkerContent
-import io.ktor.http.content.resources
-import io.ktor.http.content.static
 import io.ktor.jackson.jackson
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.response.respondRedirect
-import io.ktor.routing.get
-import io.ktor.routing.post
-import io.ktor.routing.route
-import io.ktor.routing.routing
+import io.ktor.routing.*
 import io.ktor.sessions.*
 import java.text.SimpleDateFormat
 
@@ -45,15 +41,8 @@ fun Application.main() {
         templateLoader = ClassTemplateLoader(this::class.java.classLoader, "templates")
     }
 
-    /**
-     * 可以启用多个routing, 把不同的route放在不同的代码块
-     */
-    routing {
-        // 启用静态文件访问,静态文件地址/static
-        static("/static") {
-            // 这是静态文件路径static,这个就是resources/static
-            resources("static")
-        }
+    install(Routing) {
+        configStaticPath()
     }
 
     /**
@@ -64,7 +53,7 @@ fun Application.main() {
     /**
      * 加入Jackson进行JSON对象响应
      */
-    install(ContentNegotiation){
+    install(ContentNegotiation) {
         jackson {
             this.dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         }
