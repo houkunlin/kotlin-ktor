@@ -19,10 +19,7 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.routing.routing
-import io.ktor.sessions.Sessions
-import io.ktor.sessions.cookie
-import io.ktor.sessions.sessions
-import io.ktor.sessions.set
+import io.ktor.sessions.*
 
 /**
  * Created by 侯坤林(houkunlin@ibona.cn) on 2018-12-24.
@@ -115,6 +112,12 @@ fun Application.main() {
          */
         route("/login") {
             get {
+                val session = call.sessions.get<MySession>()
+                if (session == null) {
+                    log.debug("该用户确实未登录")
+                } else {
+                    log.debug("这是一个已经登录成功的用户")
+                }
                 call.respond(FreeMarkerContent("login.ftl", null))
             }
             // 使用表单验证
