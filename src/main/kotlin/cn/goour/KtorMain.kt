@@ -15,14 +15,10 @@ import io.ktor.server.netty.Netty
  * @date 2018-12-24 16:48
  */
 
-fun Application.module() {
+fun Application.main() {
     routing {
         get("/") {
             call.respond("Hello world!")
         }
     }
-}
-
-fun main(args: Array<String>) {
-    embeddedServer(Netty, 8080, module = Application::module).start(wait = true)
 }
