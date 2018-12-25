@@ -15,6 +15,7 @@ import io.ktor.freemarker.FreeMarkerContent
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
 import io.ktor.jackson.jackson
+import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.response.respondRedirect
 import io.ktor.routing.get
@@ -117,6 +118,14 @@ fun Application.main() {
     routing {
         get("/") {
             call.respond(FreeMarkerContent("index.ftl", mapOf("data" to IndexData(listOf(0, 1, 3, 5, 4, 8)))))
+        }
+
+        post {
+            val indexData = call.receive<IndexData>()
+            log.debug("POST 接收的数据: {}", indexData)
+            indexData.items += 200
+            indexData.items += 400
+            call.respond(indexData)
         }
 
         /**
