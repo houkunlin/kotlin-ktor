@@ -5,13 +5,21 @@ import freemarker.cache.ClassTemplateLoader
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.application.log
+import io.ktor.auth.Authentication
+import io.ktor.auth.FormAuthChallenge
+import io.ktor.auth.UserIdPrincipal
+import io.ktor.auth.form
 import io.ktor.features.PartialContent
 import io.ktor.freemarker.FreeMarker
 import io.ktor.freemarker.FreeMarkerContent
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
+import io.ktor.request.receiveParameters
 import io.ktor.response.respond
 import io.ktor.routing.get
+import io.ktor.routing.post
+import io.ktor.routing.route
 import io.ktor.routing.routing
 
 /**
@@ -57,5 +65,24 @@ fun Application.main() {
         get("/") {
             call.respond(FreeMarkerContent("index.ftl", mapOf("data" to IndexData(listOf(0, 1, 3, 5, 4, 8)))))
         }
+
+        /**
+         * 添加登录映射
+         */
+        route("/login") {
+            get {
+                call.respond(FreeMarkerContent("login.ftl", null))
+            }
+            post {
+                val params = call.receiveParameters()
+                log.debug("请求参数:{}", params)
+                if (params["username"] == null || params["password"] == null) {
+                    call.respond(FreeMarkerContent("login.ftl", mapOf("error" to "失败,请输入参数")))
+                } else {
+                    call.respond(FreeMarkerContent("login.ftl", mapOf("ok" to "成功")))
+                }
+            }
+        }
     }
+
 }
