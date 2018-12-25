@@ -8,11 +8,13 @@ import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.application.log
 import io.ktor.auth.*
+import io.ktor.features.ContentNegotiation
 import io.ktor.features.PartialContent
 import io.ktor.freemarker.FreeMarker
 import io.ktor.freemarker.FreeMarkerContent
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
+import io.ktor.jackson.jackson
 import io.ktor.response.respond
 import io.ktor.response.respondRedirect
 import io.ktor.routing.get
@@ -20,6 +22,7 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.sessions.*
+import java.text.SimpleDateFormat
 
 /**
  * Created by 侯坤林(houkunlin@ibona.cn) on 2018-12-24.
@@ -56,6 +59,15 @@ fun Application.main() {
      * 开启大文件特性的支持, 官方说可以支持观看视频拖动进度, 还可以支持续传
      */
     install(PartialContent)
+
+    /**
+     * 加入Jackson进行JSON对象响应
+     */
+    install(ContentNegotiation){
+        jackson {
+            this.dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        }
+    }
 
     /**
      * 使用表单验证
