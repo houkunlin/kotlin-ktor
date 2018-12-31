@@ -1,0 +1,23 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+
+// 进行注册操作（任何人都可以访问），该操作会返回一个jwt的token
+POST {{host}}/auth/jwt/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "admin",
+  "password": "admin"
+}
+
+###
+// 访问一个受限的接口，只有拿到有效的token才能够正常访问
+GET {{host}}/auth/jwt/info
+Authorization: Bearer {{token}}
+
+###
