@@ -1,30 +1,19 @@
 package cn.goour
 
-import cn.goour.model.IndexData
-import cn.goour.model.MySession
-import cn.goour.route.configStaticPath
-import cn.goour.route.login
-import cn.goour.route.loginConfig
-import freemarker.cache.ClassTemplateLoader
-import io.ktor.application.Application
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.application.log
-import io.ktor.auth.Authentication
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.PartialContent
-import io.ktor.freemarker.FreeMarker
-import io.ktor.freemarker.FreeMarkerContent
-import io.ktor.jackson.jackson
-import io.ktor.request.receive
-import io.ktor.response.respond
-import io.ktor.routing.Routing
-import io.ktor.routing.get
-import io.ktor.routing.post
-import io.ktor.routing.routing
-import io.ktor.sessions.Sessions
-import io.ktor.sessions.cookie
-import java.text.SimpleDateFormat
+import cn.goour.model.*
+import cn.goour.route.*
+import freemarker.cache.*
+import io.ktor.application.*
+import io.ktor.auth.*
+import io.ktor.auth.jwt.*
+import io.ktor.features.*
+import io.ktor.freemarker.*
+import io.ktor.jackson.*
+import io.ktor.request.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import io.ktor.sessions.*
+import java.text.*
 
 /**
  * Created by 侯坤林(houkunlin@ibona.cn) on 2018-12-24.
@@ -46,11 +35,6 @@ fun Application.main() {
         templateLoader = ClassTemplateLoader(this::class.java.classLoader, "templates")
     }
 
-    install(Routing) {
-        configStaticPath()
-        login()
-    }
-
     /**
      * 开启大文件特性的支持, 官方说可以支持观看视频拖动进度, 还可以支持续传
      */
@@ -69,20 +53,43 @@ fun Application.main() {
      * 使用表单验证
      */
     install(Authentication) {
+        // 表单验证
         loginConfig()
+        // JWT验证
+        jwt {
+            verifier(SimpleJWT.verifier)
+
+            validate {
+                // 如果我们设置了过期时间，在运行到这里之前，它们会帮我们检测过期时间
+                // 如果已过期，是不会运行到这里的，运行到这里意味着它一定是有效的token
+                val jsonString = it.payload.subject
+                // 返回一个用户信息，当然也可以返回其他对象信息，只要他实现Principal接口即可
+                JwtToken.build(jsonString)
+            }
+        }
     }
 
     /**
      * 使用session会话功能
      */
     install(Sessions) {
+        // 通过cookie保存会话
         cookie<MySession>("SESSION")
+    }
+
+    install(DefaultHeaders) {
+        header("AuthorName", "HouKunLin")
+        header("AuthorEmail", "houkunlin@aliyun.com")
     }
 
     /**
      * 正式的路径映射内容
      */
     routing {
+        configStaticPath()
+        login()
+        jwtLogin()
+
         get("/") {
             call.respond(FreeMarkerContent("index.ftl", mapOf("data" to IndexData(listOf(0, 1, 3, 5, 4, 8)))))
         }
