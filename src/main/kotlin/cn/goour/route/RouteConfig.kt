@@ -1,8 +1,7 @@
 package cn.goour.route
 
-import io.ktor.http.content.resources
-import io.ktor.http.content.static
-import io.ktor.routing.Route
+import io.ktor.http.content.*
+import io.ktor.routing.*
 
 /**
  * 静态路径路由配置.
