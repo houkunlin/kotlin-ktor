@@ -1,0 +1,33 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+
+# 无需验证
+GET {{host}}/auth/form/test
+Content-Type: application/x-www-form-urlencoded
+Cookie: SESSION=name%3D%2523sadmin; Max-Age=604800; Expires=Sun, 06 Jan 2019 16:44:08 GMT; $x-enc=URI_ENCODING
+
+###
+# 无需验证
+GET {{host}}/auth/form/testInfo
+Content-Type: application/x-www-form-urlencoded
+Cookie: SESSION=name%3D%2523sadmin; Max-Age=604800; Expires=Sun, 06 Jan 2019 16:44:08 GMT; $x-enc=URI_ENCODING
+
+###
+
+# 登录验证
+POST {{host}}/auth/form/login
+Content-Type: application/x-www-form-urlencoded
+
+username=admin&password=admin
+
+###
+
+# 需要验证，无法通过验证，会跳转到其他地方
+GET {{host}}/auth/form/loginInfo?username=admin&password=admin
+Content-Type: application/x-www-form-urlencoded
+Cookie: SESSION=name%3D%2523sadmin; Max-Age=604800; Expires=Mon, 07 Jan 2019 09:06:11 GMT; $x-enc=URI_ENCODING
+###
