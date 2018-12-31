@@ -14,6 +14,10 @@ data class Msg(
             return Msg(0, message)
         }
 
+        fun success(data: Any?): Msg {
+            return Msg(0, "success", data)
+        }
+
         fun error(): Msg {
             return error("error")
         }
